@@ -32,7 +32,7 @@ class TestGame(unittest.TestCase):
         g = Game()
         g.initialize('#')
         g.add_player('fakeandy')
-        g.start_game()
+        g.next_round()
 
         self.assertTrue(g.instate('awaiting_submissions'))
         self.assertTrue(g.get_truther(), 'fakeandy')
@@ -42,7 +42,7 @@ class TestGame(unittest.TestCase):
         g.initialize('#')
         g.add_player('roonbaob')
         g.add_player('fakeandy')
-        g.start_game()
+        g.next_round()
 
         self.assertTrue(g.get_truther(), 'roonbaob')
         msgs = g.submission('fakeandy', 'gokarts')
@@ -63,7 +63,7 @@ class TestGame(unittest.TestCase):
         g.initialize('#')
         g.add_player('fakeandy')
         g.add_player('roonbaob')
-        g.start_game()
+        g.next_round()
         g.submission('fakeandy', 'gokarts')
         g.submission('roonbaob', 'chocolate')
 

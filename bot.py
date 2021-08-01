@@ -34,9 +34,6 @@ class Game:
             self.players.append(player)
         return [':🐴']
 
-    def start_game(self):
-        return self.next_round()
-
     def get_truther(self):
         round = len(self.rounds) - 1
         return self.players[round]
@@ -81,7 +78,6 @@ class Game:
         return msgs
 
     def guess(self, player, guess):
-        print(player, guess,  self.get_truther())
         if player not in self.players or player == self.get_truther(): return [':🚫']
 
         self.guesses[player] = guess
@@ -129,7 +125,7 @@ async def on_message(message):
     elif game.instate('herding') and icommand == 'in':
         await handle_response(game.add_player(player))
     elif direct and game.instate('gathering') and icommand == 'ready':
-        await handle_response(game.start_game())
+        await handle_response(game.next_round())
     elif direct and game.instate('awaiting_submissions'):
         await handle_response(game.submission(player, icommand))
     elif direct and game.instate('awaiting_guesses'):
