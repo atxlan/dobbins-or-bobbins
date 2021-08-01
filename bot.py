@@ -11,7 +11,7 @@ def commands_from_mention(content):
 def lower(lst):
     if isinstance(lst, str):
         lst = [lst]
-    return [s.lower().strip('!.,') for s in lst]
+    return [s.lower().strip('#!., \n\r') for s in lst]
 
 class Game:
     def __init__(self):
