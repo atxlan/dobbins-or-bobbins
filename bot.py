@@ -1,7 +1,5 @@
 import discord
 
-client = discord.Client()
-
 def command_from_message(content):
     try:
         pos = content.find('>')
@@ -21,8 +19,8 @@ class Game:
         self.channel = None
 
     def initialize(self, channel):
-        game.state = 'gathering'
-        game.channel = channel
+        self.state = 'herding'
+        self.channel = channel
         return ["Alright, who's in cowfolks? Can I get an 'In!'?"]
 
     def instate(self, state):
@@ -39,7 +37,6 @@ class Game:
 
     def next_round(self):
         msgs = []
-        print('Starting round!', self.players)
         if self.round == 0:
             msgs.append('Alright, starting a game with players: {}'.format(' '.join(self.players)))
         turn = self.round % len(self.players)
@@ -66,12 +63,14 @@ class Game:
     def show_submissions(self):
         msgs = []
         self.state = 'awaiting_guesses'
+        msg = "Okay, let's get guessing! Is the real answer..."
         msgs.append('Here are the submissions!')
         return msgs
 
     def __str__(self):
         return '{}: {}'.format(self.state, self.players)
 
+client = discord.Client()
 game = Game()
 
 @client.event
@@ -82,9 +81,6 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user:
         return
-
-    print('BEFORE:')
-    print(game)
 
     direct = str(message.channel.type) == 'private' or client.user.mentioned_in(message)
     command = command_from_message(message.content)
@@ -102,22 +98,19 @@ async def on_message(message):
 
     if direct and icommand == 'giddy up':
         await handle_response(game.initialize(message.channel))
-    elif game.instate('gathering') and icommand == 'in':
+    elif game.instate('herding') and icommand == 'in':
         await handle_response(game.add_player(player))
     elif direct and game.instate('gathering') and icommand == 'ready':
         await handle_response(game.start_game())
     elif direct and game.instate('awaiting_submissions'):
         await handle_response(game.submission(player, icommand))
     elif direct and game.instate('awaiting_guesses'):
-        game.guess(player, icommand)
+        await handle_response(game.guess(player, icommand))
 
     #TODO: when we have a submission from all players, shuffle and display
     #TODO: accept guesses as DMs or spoiler mentions
     #TODO: when we have a guess from players - 1, show the results!
     #TODO: 'again!' for another round
-
-    print('AFTER:')
-    print(game)
 
 if __name__ == "__main__":
     import sys
