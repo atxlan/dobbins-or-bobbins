@@ -31,7 +31,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: {{secrets.GITHUB_TOKEN}}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
@@ -48,7 +48,7 @@ jobs:
     env:
       TF_IN_AUTOMATION: 1
       TF_INPUT: 0
-      TF_VAR_github_token: {{secrets.GITHUB_TOKEN}}
+      TF_VAR_github_token: ${{ secrets.GITHUB_TOKEN }}
       TF_VAR_github_user: ${{ github.repository_owner }}
       TF_VAR_discord_token: ${{ secrets.DISCORD_TOKEN }}
       TF_VAR_commit: ${{ github.sha }}
@@ -62,5 +62,7 @@ jobs:
           terraform_wrapper: false
       - name: Terraform Init
         run: terraform init
+        working-directory: deploy
       - name: Terraform Apply
         run: terraform apply -auto-approve
+        working-directory: deploy
