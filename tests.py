@@ -67,13 +67,16 @@ class TestGame(unittest.TestCase):
         g.submission('fakeandy', 'gokarts')
         g.submission('roonbaob', 'chocolate')
 
-        self.assertTrue(g.instate('awaiting_guesses'))
-        msgs = g.guess('fakeandy', '1')
-        self.assertEqual(msgs, [':✅'])
-        self.assertTrue(g.instate('awaiting_guesses'))
-        msgs = g.guess('nonplayer', '2')
+        msgs = g.guess('nonplayer', '1')
         self.assertEqual(msgs, [':🚫'])
         self.assertTrue(g.instate('awaiting_guesses'))
+
+        # Ensure a submitter can't guess.
+        self.assertEqual(g.get_truther(), 'fakeandy')
+        msgs = g.guess('fakeandy', '1')
+        self.assertEqual(msgs, [':🚫'])
+        self.assertTrue(g.instate('awaiting_guesses'))
+
         msgs = g.guess('roonbaob', '2')
         self.assertEqual(msgs[0], ':✅')
         self.assertEqual(len(msgs), 2)

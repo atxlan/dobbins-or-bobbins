@@ -81,11 +81,12 @@ class Game:
         return msgs
 
     def guess(self, player, guess):
-        if player not in self.players: return [':🚫']
+        print(player, guess,  self.get_truther())
+        if player not in self.players or player == self.get_truther(): return [':🚫']
 
         self.guesses[player] = guess
         msgs = []
-        if len(self.guesses) == len(self.players):
+        if len(self.guesses) == len(self.players) - 1:
             self.state = 'awaiting_nextround'
             msgs += self.finish_round()
         return [':✅'] + msgs
