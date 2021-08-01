@@ -164,6 +164,10 @@ async def on_message(message):
     #TODO: 'again!' for another round
 
 if __name__ == "__main__":
+    import os
     import sys
-    token = sys.argv[1]
+    if os.getenv('DISCORD_TOKEN'):
+        token = os.getenv('DISCORD_TOKEN')
+    else:
+        token = sys.argv[1]
     client.run(token)
