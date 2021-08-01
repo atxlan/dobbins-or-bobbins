@@ -153,15 +153,14 @@ async def on_message(message):
         await handle_response(game.initialize(message.channel))
     elif game.instate('herding') and icommand == 'in':
         await handle_response(game.add_player(player))
-    elif direct and game.instate('gathering') and icommand == 'ready':
+    elif direct and game.instate('herding') and icommand == 'ready':
         await handle_response(game.next_round())
     elif direct and game.instate('awaiting_submissions'):
         await handle_response(game.submission(player, icommand))
     elif direct and game.instate('awaiting_guesses'):
         await handle_response(game.guess(player, icommand))
-
-    #TODO: when we have a guess from players - 1, show the results!
-    #TODO: 'again!' for another round
+    elif direct and game.instate('awaiting_nextround') and icommand == 'again':
+        await handle_response(game.next_round())
 
 if __name__ == "__main__":
     import os
