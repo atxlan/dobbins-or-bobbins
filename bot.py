@@ -2,16 +2,15 @@ import discord
 
 client = discord.Client()
 
-def commands_from_mention(content):
+def command_from_message(content):
     try:
-        return content[content.find('>')+2:].split()
+        pos = content.find('>')
+        return content if pos == -1 else content[pos+2:]
     except:
         return None
 
-def lower(lst):
-    if isinstance(lst, str):
-        lst = [lst]
-    return [s.lower().strip('#!., \n\r') for s in lst]
+def lower(msg):
+    return msg.lower().strip('#!., \n\r')
 
 class Game:
     def __init__(self):
@@ -19,6 +18,9 @@ class Game:
         self.rounds = []
         self.players = []
         self.round = 0
+
+    def instate(self, state):
+        return self.state == state
 
     def add_player(self, author):
         player = author.name
@@ -59,23 +61,25 @@ async def on_message(message):
     print('BEFORE:')
     print(game)
 
-    if client.user.mentioned_in(message):
-        print('Mention from {}!'.format(message.author))
-        commands = commands_from_mention(message.content)
-        if lower(commands) == ['giddy', 'up']:
-            await message.channel.send("Alright, who's in cowfolks? Can I get an 'In!'?")
-            game.state = 'gathering'
-        elif game.state == 'gathering' and lower(commands) == ['in']:
-            game.add_player(message.author)
-            await message.add_reaction('🐴')
-        elif game.state == 'gathering' and lower(commands) == ['ready']:
-            for msg in game.start_game():
-                await message.channel.send(msg)
-        #TODO: handle DMs of submissions: truth or fibs depending on turn
-        #TODO: when we have a submission from all players, shuffle and display
-        #TODO: accept guesses as DMs or spoiler mentions
-        #TODO: when we have a guess from players - 1, show the results!
-        #TODO: 'again!' for another round
+    direct = client.user.mentioned_in(message) # TODO: check for DM as well
+    command = command_from_message(message.content)
+    icommand = lower(command)
+    #print('Mention from {}!'.format(message.author))
+    if direct and icommand == 'giddy up':
+        await message.channel.send("Alright, who's in cowfolks? Can I get an 'In!'?")
+        game.state = 'gathering'
+    elif game.instate('gathering') and icommand == 'in':
+        game.add_player(message.author)
+        await message.add_reaction('🐴')
+    elif direct and game.instate('gathering') and icommand == 'ready':
+        for msg in game.start_game():
+            await message.channel.send(msg)
+
+    #TODO: handle DMs of submissions: truth or fibs depending on turn
+    #TODO: when we have a submission from all players, shuffle and display
+    #TODO: accept guesses as DMs or spoiler mentions
+    #TODO: when we have a guess from players - 1, show the results!
+    #TODO: 'again!' for another round
 
     print('AFTER:')
     print(game)
