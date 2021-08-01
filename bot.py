@@ -1,6 +1,7 @@
 import discord
 from collections import defaultdict
 import random
+import os
 
 def command_from_message(content):
     try:
@@ -150,7 +151,9 @@ async def on_message(message):
                 else:
                     await game.channel.send(msg)
 
-    if direct and icommand == 'giddy up':
+    if direct and icommand == 'pedigree please':
+        await message.channel.send(os.getenv('GIT_COMMIT'))
+    elif direct and icommand == 'giddy up':
         await handle_response(game.initialize(message.channel))
     elif game.instate('herding') and icommand == 'in':
         await handle_response(game.add_player(player))
