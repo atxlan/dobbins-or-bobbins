@@ -1,3 +1,4 @@
+import random
 import unittest
 
 from bot import Game
@@ -57,16 +58,19 @@ class TestGame(unittest.TestCase):
         self.assertTrue(g.instate('awaiting_guesses'))
         self.assertEqual(msgs[0], ':✅')
         self.assertEqual(len(msgs), 2)
-        print(msgs[1])
 
     def test_guesses(self):
+        random.seed(9003)
         g = Game()
         g.initialize('#')
         g.add_player('fakeandy')
         g.add_player('roonbaob')
+        g.add_player('tater')
         g.next_round()
         g.submission('fakeandy', 'gokarts')
-        g.submission('roonbaob', 'chocolate')
+        g.submission('tater', 'bofa deez nuts')
+        msgs = g.submission('roonbaob', 'chocolate')
+        print(msgs[1])
 
         msgs = g.guess('nonplayer', '1')
         self.assertEqual(msgs, [':🚫'])
@@ -78,7 +82,13 @@ class TestGame(unittest.TestCase):
         self.assertEqual(msgs, [':🚫'])
         self.assertTrue(g.instate('awaiting_guesses'))
 
-        msgs = g.guess('roonbaob', '2')
+        # Ensure a non-int is handled gracefully.
+        msgs = g.guess('roonbaob', '2x')
+        self.assertEqual(msgs[0], ':😱')
+
+        msgs = g.guess('tater', '3')
+        self.assertEqual(msgs, [':✅'])
+        msgs = g.guess('roonbaob', '1')
         self.assertEqual(msgs[0], ':✅')
         self.assertEqual(len(msgs), 2)
         print(msgs[1])

@@ -1,4 +1,5 @@
 import discord
+from collections import defaultdict
 import random
 
 def command_from_message(content):
@@ -20,6 +21,7 @@ class Game:
         self.round = 0
         self.order = []
         self.guesses = {}
+        self.scores = defaultdict(int)
 
     def initialize(self, channel):
         self.channel = channel
@@ -81,6 +83,11 @@ class Game:
     def guess(self, player, guess):
         if player not in self.players or player == self.get_truther(): return [':🚫']
 
+        try:
+            guess = int(guess)
+        except ValueError:
+            return [':😱']
+
         self.guesses[player] = guess
         msgs = []
         if len(self.guesses) == len(self.players) - 1:
@@ -91,9 +98,26 @@ class Game:
     def finish_round(self):
         truther = self.get_truther()
         real = self.get_round()[truther]
-        for player, guess in self.guesses.items():
-            print(player, guess)
         msg = "The real answer was '{}'!".format(real)
+        real_guess = False
+        for player, guess in self.guesses.items():
+            owner = self.players[self.order.index(guess-1)]
+            if owner == truther:
+                msg += "\n* {} correctly guessed {} (+1 for {})".format(player, guess, player)
+                self.scores[player] += 1
+                real_guess = True
+            else:
+                msg += "\n* {} guessed {} (+1 to {})".format(player, guess, owner)
+                self.scores[owner] += 1
+        if not real_guess:
+            msg += "\n* {} fooled everyone with {}, +1 for them!".format(truther, real)
+            self.scores[truther] += 1
+
+        msg += "\n\nCurrent totals:"
+        for player, total in sorted(self.scores.items(), key=lambda x: -x[1]):
+            msg += '\n* {}: {}'.format(player, total)
+
+        msg += "\n"
         return [msg]
 
     def __str__(self):
