@@ -19,7 +19,8 @@ class TestGame(unittest.TestCase):
         g.initialize('#')
 
         self.assertEqual(g.players, [])
-        g.add_player('fakeandy')
+        msgs = g.add_player('fakeandy')
+        self.assertEqual(msgs, [':🐴'])
         self.assertEqual(g.players, ['fakeandy'])
         # Ensure we don't get a dupe
         g.add_player('fakeandy')
@@ -34,15 +35,17 @@ class TestGame(unittest.TestCase):
         g.start_game()
 
         self.assertTrue(g.instate('awaiting_submissions'))
+        self.assertTrue(g.get_truther(), 'fakeandy')
 
-    def test_submission(self):
+    def test_submissions(self):
         g = Game()
         g.initialize('#')
-        g.add_player('fakeandy')
         g.add_player('roonbaob')
+        g.add_player('fakeandy')
         g.start_game()
 
-        msgs = g.submission('fakeandy', 'gokart')
+        self.assertTrue(g.get_truther(), 'roonbaob')
+        msgs = g.submission('fakeandy', 'gokarts')
         self.assertTrue(g.instate('awaiting_submissions'))
         self.assertEqual(msgs, [':✅'])
 
@@ -50,11 +53,33 @@ class TestGame(unittest.TestCase):
         self.assertTrue(g.instate('awaiting_submissions'))
         self.assertEqual(msgs, [':🚫'])
 
-        msgs = g.submission('roonbaob', 'pathofexile')
+        msgs = g.submission('roonbaob', 'chocolate')
         self.assertTrue(g.instate('awaiting_guesses'))
         self.assertEqual(msgs[0], ':✅')
         self.assertEqual(len(msgs), 2)
+
+    def test_guesses(self):
+        g = Game()
+        g.initialize('#')
+        g.add_player('fakeandy')
+        g.add_player('roonbaob')
+        g.start_game()
+        g.submission('fakeandy', 'gokarts')
+        g.submission('roonbaob', 'chocolate')
+
+        self.assertTrue(g.instate('awaiting_guesses'))
+        msgs = g.guess('fakeandy', '1')
+        self.assertEqual(msgs, [':✅'])
+        self.assertTrue(g.instate('awaiting_guesses'))
+        msgs = g.guess('nonplayer', '2')
+        self.assertEqual(msgs, [':🚫'])
+        self.assertTrue(g.instate('awaiting_guesses'))
+        msgs = g.guess('roonbaob', '2')
+        self.assertEqual(msgs[0], ':✅')
+        self.assertEqual(len(msgs), 2)
         print(msgs[1])
+        self.assertTrue(g.instate('awaiting_nextround'))
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,4 +1,5 @@
 import discord
+import random
 
 def command_from_message(content):
     try:
@@ -12,15 +13,16 @@ def lower(msg):
 
 class Game:
     def __init__(self):
+        self.channel = None
         self.state = 'initialized'
         self.rounds = []
         self.players = []
         self.round = 0
-        self.channel = None
+        self.guesses = {}
 
     def initialize(self, channel):
-        self.state = 'herding'
         self.channel = channel
+        self.state = 'herding'
         return ["Alright, who's in cowfolks? Can I get an 'In!'?"]
 
     def instate(self, state):
@@ -35,12 +37,15 @@ class Game:
     def start_game(self):
         return self.next_round()
 
+    def get_truther(self):
+        round = len(self.rounds) - 1
+        return self.players[round]
+
     def next_round(self):
         msgs = []
         if self.round == 0:
             msgs.append('Alright, starting a game with players: {}'.format(' '.join(self.players)))
-        turn = self.round % len(self.players)
-        msgs.append("You're up, {}. Slide a truth bomb into my DMs! Everyone else, a fib.".format(self.players[turn]))
+        msgs.append("You're up, {}. Slide a truth bomb into my DMs! Everyone else, a fib.".format(self.get_truther()))
         self.state = 'awaiting_submissions'
         self.rounds.append({})
         return msgs
@@ -48,11 +53,13 @@ class Game:
     def end_round(self):
         self.round += 1
 
+    def get_round(self):
+        return self.rounds[-1]
+
     def submission(self, author, text):
-        #print(repr(author), self.players, author in self.players)
-        if author not in self.players:
-            return [':🚫']
-        round = self.rounds[-1]
+        if author not in self.players: return [':🚫']
+
+        round = self.get_round()
         round[author] = text
         num_submissions = len(round.keys())
         msgs = [':✅']
@@ -63,9 +70,29 @@ class Game:
     def show_submissions(self):
         msgs = []
         self.state = 'awaiting_guesses'
-        msg = "Okay, let's get guessing! Is the real answer..."
-        msgs.append('Here are the submissions!')
+        msg = "Okay, let's get guessing! Is the real answer:\n\n"
+        lplayers = self.players[:]
+        random.shuffle(lplayers)
+        round = self.get_round()
+        for i, player in enumerate(lplayers):
+            msg += '{}. {}\n'.format(i+1, round[player])
+        msg += '\nHit me with a DM or mention with your guess number!'
+        msgs.append(msg)
         return msgs
+
+    def guess(self, player, guess):
+        if player not in self.players: return [':🚫']
+
+        self.guesses[player] = guess
+        msgs = []
+        if len(self.guesses) == len(self.players):
+            self.state = 'awaiting_nextround'
+            msgs += self.finish_round()
+        return [':✅'] + msgs
+
+    def finish_round(self):
+        msg = "Round complete! Here's the scores:"
+        return [msg]
 
     def __str__(self):
         return '{}: {}'.format(self.state, self.players)
@@ -107,8 +134,6 @@ async def on_message(message):
     elif direct and game.instate('awaiting_guesses'):
         await handle_response(game.guess(player, icommand))
 
-    #TODO: when we have a submission from all players, shuffle and display
-    #TODO: accept guesses as DMs or spoiler mentions
     #TODO: when we have a guess from players - 1, show the results!
     #TODO: 'again!' for another round
 
