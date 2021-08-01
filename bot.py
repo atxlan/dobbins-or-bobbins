@@ -65,7 +65,7 @@ async def on_message(message):
             game.state = 'gathering'
         elif game.state == 'gathering' and lower(commands) == ['in']:
             game.add_player(message.author)
-            await message.add_reaction('👍')
+            await message.add_reaction('🐴')
         elif game.state == 'gathering' and lower(commands) == ['ready']:
             for msg in game.start_game():
                 await message.channel.send(msg)
@@ -77,9 +77,5 @@ async def on_message(message):
 
     print('AFTER:')
     print(game)
-
-
-    if message.content.startswith('$hello'):
-        await message.channel.send('Hello!')
 
 client.run('ODcxMjQyOTQ1MjAwNzk1NzI4.YQYeOQ.hI3-foOp0-jY2LkD89S7kibscao')
