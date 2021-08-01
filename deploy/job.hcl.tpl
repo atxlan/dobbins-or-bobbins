@@ -33,7 +33,7 @@ job "dorb" {
 
       env {
         DISCORD_TOKEN = "${discord_token}"
-        GIT_COMMIT    =  "${commit}
+        GIT_COMMIT    =  "${commit}"
       }
     }
   }

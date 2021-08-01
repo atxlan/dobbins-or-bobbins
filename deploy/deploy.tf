@@ -45,7 +45,7 @@ provider "docker" {
   }
 }
 
-resource "nomad_job" "wbld" {
+resource "nomad_job" "dorb" {
   jobspec = templatefile(
     "job.hcl.tpl",
     { github_token  = var.github_token,
