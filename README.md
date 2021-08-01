@@ -13,5 +13,5 @@ All commands are case-insensitive, with trailing punctuation and spacing ignored
 1. The bot will announce which player is submitting a "truth." Each player can now DM their submissions to the bot as appropriate. If you send multiple messages, the last one will be used.
 1. Once a submission from each player has been received, the bot will present the choices in a random order.
 1. Now, DM or mention your guess number (`@bot 2!`)
-1. Once all guesses are received, the bot display the results and current scores.
+1. Once all guesses are received, the bot displays the results and current scores.
 1. Use `@bot again!` for another round or `@bot giddy up!` to start over.
