@@ -14,18 +14,17 @@ def lower(msg):
 
 class Game:
     def __init__(self):
-        self.channel = None
-        self.state = 'initialized'
+        self.state = 'unstarted'
+
+    def initialize(self, channel):
+        self.channel = channel
+        self.state = 'herding'
         self.rounds = []
         self.players = []
         self.round = 0
         self.order = []
         self.guesses = {}
         self.scores = defaultdict(int)
-
-    def initialize(self, channel):
-        self.channel = channel
-        self.state = 'herding'
         return ["Alright, who's in cowfolks? Can I get an 'In!'?"]
 
     def instate(self, state):
@@ -88,7 +87,7 @@ class Game:
         except ValueError:
             return [':😱']
 
-        self.guesses[player] = guess
+        self.guesses[player] = guess - 1
         msgs = []
         if len(self.guesses) == len(self.players) - 1:
             self.state = 'awaiting_nextround'
@@ -98,16 +97,18 @@ class Game:
     def finish_round(self):
         truther = self.get_truther()
         real = self.get_round()[truther]
+        #print('===', truther, real, self.players, self.order)
         msg = "The real answer was '{}'!".format(real)
         real_guess = False
         for player, guess in self.guesses.items():
-            owner = self.players[self.order.index(guess-1)]
+            owner = self.players[self.order[guess]]
+            #print('===', player, guess+1, owner)
             if owner == truther:
-                msg += "\n* {} correctly guessed {} (+1 for {})".format(player, guess, player)
+                msg += "\n* {} correctly guessed {} (+1 for {})".format(player, guess+1, player)
                 self.scores[player] += 1
                 real_guess = True
             else:
-                msg += "\n* {} guessed {} (+1 to {})".format(player, guess, owner)
+                msg += "\n* {} guessed {} (+1 to {})".format(player, guess+1, owner)
                 self.scores[owner] += 1
         if not real_guess:
             msg += "\n* {} fooled everyone with {}, +1 for them!".format(truther, real)

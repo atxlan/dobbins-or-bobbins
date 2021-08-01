@@ -7,7 +7,7 @@ class TestGame(unittest.TestCase):
 
     def test_initial_state(self):
         g = Game()
-        self.assertTrue(g.instate('initialized'))
+        self.assertTrue(g.instate('unstarted'))
 
     def test_giddy_up(self):
         g = Game()
@@ -60,7 +60,7 @@ class TestGame(unittest.TestCase):
         self.assertEqual(len(msgs), 2)
 
     def test_guesses(self):
-        random.seed(9003)
+        random.seed(9007)
         g = Game()
         g.initialize('#')
         g.add_player('fakeandy')
