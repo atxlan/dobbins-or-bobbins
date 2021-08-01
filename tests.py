@@ -57,6 +57,7 @@ class TestGame(unittest.TestCase):
         self.assertTrue(g.instate('awaiting_guesses'))
         self.assertEqual(msgs[0], ':✅')
         self.assertEqual(len(msgs), 2)
+        print(msgs[1])
 
     def test_guesses(self):
         g = Game()

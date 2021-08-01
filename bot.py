@@ -18,6 +18,7 @@ class Game:
         self.rounds = []
         self.players = []
         self.round = 0
+        self.order = []
         self.guesses = {}
 
     def initialize(self, channel):
@@ -68,11 +69,11 @@ class Game:
         msgs = []
         self.state = 'awaiting_guesses'
         msg = "Okay, let's get guessing! Is the real answer:\n\n"
-        lplayers = self.players[:]
-        random.shuffle(lplayers)
+        self.order = list(range(len(self.players)))
+        random.shuffle(self.order)
         round = self.get_round()
-        for i, player in enumerate(lplayers):
-            msg += '{}. {}\n'.format(i+1, round[player])
+        for i, x in enumerate(self.order):
+            msg += '{}. {}\n'.format(i+1, round[self.players[x]])
         msg += '\nHit me with a DM or mention with your guess number!'
         msgs.append(msg)
         return msgs
@@ -88,7 +89,11 @@ class Game:
         return [':✅'] + msgs
 
     def finish_round(self):
-        msg = "Round complete! Here's the scores:"
+        truther = self.get_truther()
+        real = self.get_round()[truther]
+        for player, guess in self.guesses.items():
+            print(player, guess)
+        msg = "The real answer was '{}'!".format(real)
         return [msg]
 
     def __str__(self):
