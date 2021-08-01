@@ -9,6 +9,8 @@ def commands_from_mention(content):
         return None
 
 def lower(lst):
+    if isinstance(lst, str):
+        lst = [lst]
     return [s.lower().strip('!.,') for s in lst]
 
 class Game:
@@ -78,4 +80,7 @@ async def on_message(message):
     print('AFTER:')
     print(game)
 
-client.run('ODcxMjQyOTQ1MjAwNzk1NzI4.YQYeOQ.hI3-foOp0-jY2LkD89S7kibscao')
+if __name__ == "__main__":
+    import sys
+    token = sys.argv[1]
+    client.run(token)
