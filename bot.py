@@ -61,10 +61,11 @@ async def on_message(message):
     print('BEFORE:')
     print(game)
 
-    direct = client.user.mentioned_in(message) # TODO: check for DM as well
+    direct = str(message.channel.type) == 'private' or client.user.mentioned_in(message)
     command = command_from_message(message.content)
     icommand = lower(command)
-    #print('Mention from {}!'.format(message.author))
+    print('command (direct? {}): {}'.format(direct, icommand))
+
     if direct and icommand == 'giddy up':
         await message.channel.send("Alright, who's in cowfolks? Can I get an 'In!'?")
         game.state = 'gathering'
