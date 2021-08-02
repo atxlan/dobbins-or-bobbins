@@ -11,16 +11,6 @@ variable "commit" {}
 
 variable "image" {}
 
-variable "github_token" {
-  description = "GitHub token for GHCR auth"
-  sensitive   = true
-}
-
-variable "github_user" {
-  description = "GitHub user for GHCR auth"
-  sensitive   = true
-}
-
 variable "discord_token" {
   description = "Discord auth token"
   sensitive   = true
