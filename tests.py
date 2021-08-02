@@ -70,7 +70,7 @@ class TestGame(unittest.TestCase):
         self.assertIn("You're up, fakeandy", msgs[1])
         g.submission('fakeandy', 'gokarts')
         g.submission('tater', 'bofa deez nuts')
-        msgs = g.submission('roonbaob', 'chocolate')
+        msgs = g.submission('roonbaob', 'Chocolate')
         #print(msgs[1])
 
         msgs = g.guess('nonplayer', '1')
@@ -94,6 +94,11 @@ class TestGame(unittest.TestCase):
         self.assertEqual(len(msgs), 2)
         #print(msgs[1])
         self.assertTrue(g.instate('awaiting_nextround'))
+
+        self.assertEqual(len(g.guesses), 2)
+        g.next_round()
+        self.assertEqual(len(g.guesses), 0)
+
 
 
 if __name__ == '__main__':

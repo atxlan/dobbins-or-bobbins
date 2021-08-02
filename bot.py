@@ -36,11 +36,15 @@ class Game:
             self.players.append(player)
         return [':🐴']
 
+    def get_round(self):
+        return self.rounds[-1]
+
     def get_truther(self):
         round = len(self.rounds) - 1
         return self.players[round]
 
     def next_round(self):
+        self.guesses = {}
         msgs = []
         if len(self.rounds) == 0:
             msgs.append('Alright, starting a game with players: {}'.format(' '.join(self.players)))
@@ -48,9 +52,6 @@ class Game:
         msgs.append("You're up, {}. Slide a truth bomb into my DMs! Everyone else, a fib.".format(self.get_truther()))
         self.state = 'awaiting_submissions'
         return msgs
-
-    def get_round(self):
-        return self.rounds[-1]
 
     def submission(self, author, text):
         if author not in self.players: return [':🚫']
@@ -156,7 +157,7 @@ async def on_message(message):
     elif direct and game.instate('herding') and icommand == 'ready':
         await handle_response(game.next_round())
     elif direct and game.instate('awaiting_submissions'):
-        await handle_response(game.submission(player, icommand))
+        await handle_response(game.submission(player, command))
     elif direct and game.instate('awaiting_guesses'):
         await handle_response(game.guess(player, icommand))
     elif direct and game.instate('awaiting_nextround') and icommand == 'again':
