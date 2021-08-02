@@ -1,10 +1,5 @@
 terraform {
   required_providers {
-    docker = {
-      source  = "kreuzwerker/docker"
-      version = "2.8.0"
-    }
-
     nomad = {
       source  = "hashicorp/nomad"
       version = "1.4.11"
@@ -35,21 +30,10 @@ provider "nomad" {
   address = "http://127.0.0.1:4646"
 }
 
-provider "docker" {
-  host = "tcp://127.0.0.1:2375"
-
-  registry_auth {
-    address  = "ghcr.io"
-    username = var.github_user
-    password = var.github_token
-  }
-}
-
 resource "nomad_job" "dorb" {
   jobspec = templatefile(
     "job.hcl.tpl",
-    { github_token  = var.github_token,
-      github_user   = var.github_user,
+    {
       discord_token = var.discord_token,
       image         = var.image,
       commit        = var.commit
