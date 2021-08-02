@@ -22,7 +22,6 @@ class Game:
         self.state = 'herding'
         self.rounds = []
         self.players = []
-        self.round = 0
         self.order = []
         self.guesses = {}
         self.scores = defaultdict(int)
@@ -43,15 +42,12 @@ class Game:
 
     def next_round(self):
         msgs = []
-        if self.round == 0:
+        if len(self.rounds) == 0:
             msgs.append('Alright, starting a game with players: {}'.format(' '.join(self.players)))
+        self.rounds.append({})
         msgs.append("You're up, {}. Slide a truth bomb into my DMs! Everyone else, a fib.".format(self.get_truther()))
         self.state = 'awaiting_submissions'
-        self.rounds.append({})
         return msgs
-
-    def end_round(self):
-        self.round += 1
 
     def get_round(self):
         return self.rounds[-1]
