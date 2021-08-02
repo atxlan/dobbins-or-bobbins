@@ -120,7 +120,10 @@ class Game:
         return [msg]
 
     def __str__(self):
-        return '{}: {}'.format(self.state, self.players)
+        status = 'In state "{}" with players {}'.format(self.state, self.players)
+        if self.state != 'unstarted':
+            status += '\nIn Round #{}. Submissions from {}, guesses from {}'.format(len(self.rounds), list(self.get_round().keys()), list(self.guesses.keys()))
+        return status
 
 client = discord.Client()
 game = Game()
@@ -150,6 +153,8 @@ async def on_message(message):
 
     if direct and icommand == 'pedigree please':
         await message.channel.send(os.getenv('GIT_COMMIT'))
+    elif direct and icommand == 'what\'s your damage':
+        await message.channel.send(str(game))
     elif direct and icommand == 'giddy up':
         await handle_response(game.initialize(message.channel))
     elif game.instate('herding') and icommand == 'in':
