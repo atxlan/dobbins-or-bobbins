@@ -11,7 +11,7 @@ def command_from_message(content):
         return None
 
 def lower(msg):
-    return msg.lower().strip('#!., \n\r')
+    return msg.lower().strip('#?!., \n\r').replace("'", '')
 
 class Game:
     def __init__(self):
@@ -153,7 +153,7 @@ async def on_message(message):
 
     if direct and icommand == 'pedigree please':
         await message.channel.send(os.getenv('GIT_COMMIT'))
-    elif direct and icommand == 'what\'s your damage':
+    elif direct and icommand == 'whats your damage':
         await message.channel.send(str(game))
     elif direct and icommand == 'giddy up':
         await handle_response(game.initialize(message.channel))
