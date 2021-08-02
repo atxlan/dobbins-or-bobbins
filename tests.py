@@ -8,6 +8,7 @@ class TestGame(unittest.TestCase):
     def test_initial_state(self):
         g = Game()
         self.assertTrue(g.instate('unstarted'))
+        self.assertEqual(str(g), 'In state "unstarted" with players []')
 
     def test_giddy_up(self):
         g = Game()

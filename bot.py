@@ -16,6 +16,7 @@ def lower(msg):
 class Game:
     def __init__(self):
         self.state = 'unstarted'
+        self.players = []
 
     def initialize(self, channel):
         self.channel = channel
