@@ -1,4 +1,5 @@
 FROM python:3.9.6-slim
+LABEL org.opencontainers.image.source = "https://github.com/atxlan/dobbins-or-bobbins"
 ENV PATH="/usr/src/venv/bin:$PATH"
 WORKDIR /usr/src/app
 COPY requirements.txt /usr/src/app/
