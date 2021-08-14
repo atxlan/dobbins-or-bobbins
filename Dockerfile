@@ -1,4 +1,4 @@
-FROM python:3.9.6-slim
+FROM python:3.9.6
 LABEL org.opencontainers.image.source = "https://github.com/atxlan/dobbins-or-bobbins"
 ENV PATH="/usr/src/venv/bin:$PATH"
 WORKDIR /usr/src/app
