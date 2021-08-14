@@ -1,17 +1,22 @@
-import discord
 from collections import defaultdict
 import random
 import os
+import sys
+
+import discord
+
 
 def command_from_message(content):
     try:
         pos = content.find('>')
-        return content if pos == -1 else content[pos+2:]
+        return content if pos == -1 else content[pos + 2 :]
     except:
         return None
 
+
 def lower(msg):
     return msg.lower().strip('#?!., \n\r').replace("'", '')
+
 
 class Game:
     def __init__(self):
@@ -55,7 +60,8 @@ class Game:
         return msgs
 
     def submission(self, author, text):
-        if author not in self.players: return [':🚫']
+        if author not in self.players:
+            return [':🚫']
 
         round = self.get_round()
         round[author] = text
@@ -73,13 +79,14 @@ class Game:
         random.shuffle(self.order)
         round = self.get_round()
         for i, x in enumerate(self.order):
-            msg += '{}. {}\n'.format(i+1, round[self.players[x]])
+            msg += '{}. {}\n'.format(i + 1, round[self.players[x]])
         msg += '\nHit me with a DM or mention with your guess number!'
         msgs.append(msg)
         return msgs
 
     def guess(self, player, guess):
-        if player not in self.players or player == self.get_truther(): return [':🚫']
+        if player not in self.players or player == self.get_truther():
+            return [':🚫']
 
         try:
             guess = int(guess)
@@ -96,18 +103,18 @@ class Game:
     def finish_round(self):
         truther = self.get_truther()
         real = self.get_round()[truther]
-        #print('===', truther, real, self.players, self.order)
+        # print('===', truther, real, self.players, self.order)
         msg = "The real answer was '{}'!".format(real)
         real_guess = False
         for player, guess in self.guesses.items():
             owner = self.players[self.order[guess]]
-            #print('===', player, guess+1, owner)
+            # print('===', player, guess+1, owner)
             if owner == truther:
-                msg += "\n* {} correctly guessed {} (+1 for {})".format(player, guess+1, player)
+                msg += "\n* {} correctly guessed {} (+1 for {})".format(player, guess + 1, player)
                 self.scores[player] += 1
                 real_guess = True
             else:
-                msg += "\n* {} guessed {} (+1 to {})".format(player, guess+1, owner)
+                msg += "\n* {} guessed {} (+1 to {})".format(player, guess + 1, owner)
                 self.scores[owner] += 1
         if not real_guess:
             msg += "\n* {} fooled everyone with {}, +1 for them!".format(truther, real)
@@ -123,15 +130,20 @@ class Game:
     def __str__(self):
         status = 'In state "{}" with players {}'.format(self.state, self.players)
         if self.state != 'unstarted':
-            status += '\nIn Round #{}. Submissions from {}, guesses from {}'.format(len(self.rounds), list(self.get_round().keys()), list(self.guesses.keys()))
+            status += '\nIn Round #{}. Submissions from {}, guesses from {}'.format(
+                len(self.rounds), list(self.get_round().keys()), list(self.guesses.keys())
+            )
         return status
+
 
 client = discord.Client()
 game = Game()
 
+
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
+
 
 @client.event
 async def on_message(message):
@@ -169,9 +181,8 @@ async def on_message(message):
     elif direct and game.instate('awaiting_nextround') and icommand == 'again':
         await handle_response(game.next_round())
 
+
 if __name__ == "__main__":
-    import os
-    import sys
     if os.getenv('DISCORD_TOKEN'):
         token = os.getenv('DISCORD_TOKEN')
     else:

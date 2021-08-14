@@ -3,8 +3,8 @@ import unittest
 
 from bot import Game
 
-class TestGame(unittest.TestCase):
 
+class TestGame(unittest.TestCase):
     def test_initial_state(self):
         g = Game()
         self.assertTrue(g.instate('unstarted'))
@@ -72,7 +72,7 @@ class TestGame(unittest.TestCase):
         g.submission('fakeandy', 'gokarts')
         g.submission('tater', 'bofa deez nuts')
         msgs = g.submission('roonbaob', 'Chocolate')
-        #print(msgs[1])
+        # print(msgs[1])
 
         msgs = g.guess('nonplayer', '1')
         self.assertEqual(msgs, [':🚫'])
@@ -93,13 +93,12 @@ class TestGame(unittest.TestCase):
         msgs = g.guess('roonbaob', '1')
         self.assertEqual(msgs[0], ':✅')
         self.assertEqual(len(msgs), 2)
-        #print(msgs[1])
+        # print(msgs[1])
         self.assertTrue(g.instate('awaiting_nextround'))
 
         self.assertEqual(len(g.guesses), 2)
         g.next_round()
         self.assertEqual(len(g.guesses), 0)
-
 
 
 if __name__ == '__main__':
