@@ -1,1 +1,2 @@
 git+git://github.com/Rapptz/discord.py@1e17b7f#egg=discord.py
+black

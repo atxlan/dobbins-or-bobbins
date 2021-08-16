@@ -11,6 +11,7 @@ jobs:
         with:
           python-version: 3.9
       - run: pip install -r requirements.txt
+      - run: black -l 120 --check --diff .
       - run: python3 tests.py
   image:
     runs-on: [self-hosted, Linux]
