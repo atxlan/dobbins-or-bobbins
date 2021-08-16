@@ -1,17 +1,12 @@
-import discord
 from collections import defaultdict
 import random
 import os
+import sys
+from typing import List
 
-def command_from_message(content):
-    try:
-        pos = content.find('>')
-        return content if pos == -1 else content[pos+2:]
-    except:
-        return None
+from discord.ext import commands
+from discord.ext.commands.errors import CheckFailure
 
-def lower(msg):
-    return msg.lower().strip('#?!., \n\r').replace("'", '')
 
 class Game:
     def __init__(self):
@@ -35,7 +30,7 @@ class Game:
         player = author
         if player not in self.players:
             self.players.append(player)
-        return [':🐴']
+        return ['🐴']
 
     def get_round(self):
         return self.rounds[-1]
@@ -44,7 +39,7 @@ class Game:
         round = len(self.rounds) - 1
         return self.players[round]
 
-    def next_round(self):
+    def next_round(self) -> List[str]:
         self.guesses = {}
         msgs = []
         if len(self.rounds) == 0:
@@ -54,18 +49,19 @@ class Game:
         self.state = 'awaiting_submissions'
         return msgs
 
-    def submission(self, author, text):
-        if author not in self.players: return [':🚫']
+    def submission(self, author, text) -> List[str]:
+        if author not in self.players:
+            return ['🚫']
 
         round = self.get_round()
         round[author] = text
         num_submissions = len(round.keys())
-        msgs = [':✅']
+        msgs = ['✅']
         if num_submissions == len(self.players):
             msgs += self.show_submissions()
         return msgs
 
-    def show_submissions(self):
+    def show_submissions(self) -> List[str]:
         msgs = []
         self.state = 'awaiting_guesses'
         msg = "Okay, let's get guessing! Is the real answer:\n\n"
@@ -73,41 +69,42 @@ class Game:
         random.shuffle(self.order)
         round = self.get_round()
         for i, x in enumerate(self.order):
-            msg += '{}. {}\n'.format(i+1, round[self.players[x]])
+            msg += '{}. {}\n'.format(i + 1, round[self.players[x]])
         msg += '\nHit me with a DM or mention with your guess number!'
         msgs.append(msg)
         return msgs
 
     def guess(self, player, guess):
-        if player not in self.players or player == self.get_truther(): return [':🚫']
+        if player not in self.players or player == self.get_truther():
+            return ['🚫']
 
         try:
             guess = int(guess)
         except ValueError:
-            return [':😱']
+            return ['😱']
 
         self.guesses[player] = guess - 1
         msgs = []
         if len(self.guesses) == len(self.players) - 1:
             self.state = 'awaiting_nextround'
             msgs += self.finish_round()
-        return [':✅'] + msgs
+        return ['✅'] + msgs
 
     def finish_round(self):
         truther = self.get_truther()
         real = self.get_round()[truther]
-        #print('===', truther, real, self.players, self.order)
+        # print('===', truther, real, self.players, self.order)
         msg = "The real answer was '{}'!".format(real)
         real_guess = False
         for player, guess in self.guesses.items():
             owner = self.players[self.order[guess]]
-            #print('===', player, guess+1, owner)
+            # print('===', player, guess+1, owner)
             if owner == truther:
-                msg += "\n* {} correctly guessed {} (+1 for {})".format(player, guess+1, player)
+                msg += "\n* {} correctly guessed {} (+1 for {})".format(player, guess + 1, player)
                 self.scores[player] += 1
                 real_guess = True
             else:
-                msg += "\n* {} guessed {} (+1 to {})".format(player, guess+1, owner)
+                msg += "\n* {} guessed {} (+1 to {})".format(player, guess + 1, owner)
                 self.scores[owner] += 1
         if not real_guess:
             msg += "\n* {} fooled everyone with {}, +1 for them!".format(truther, real)
@@ -123,57 +120,89 @@ class Game:
     def __str__(self):
         status = 'In state "{}" with players {}'.format(self.state, self.players)
         if self.state != 'unstarted':
-            status += '\nIn Round #{}. Submissions from {}, guesses from {}'.format(len(self.rounds), list(self.get_round().keys()), list(self.guesses.keys()))
+            status += '\nIn Round #{}. Submissions from {}, guesses from {}'.format(
+                len(self.rounds), list(self.get_round().keys()), list(self.guesses.keys())
+            )
         return status
 
-client = discord.Client()
+
+def in_state(state):
+    def predicate(ctx: commands.Context):
+        if not state == ctx.cog.game.state:
+            return CheckFailure(f'Neigh! Game state {ctx.game.state} not in required state: {state}')
+        return True
+
+    return commands.check(predicate)
+
+
+class GameCog(commands.Cog):
+    def __init__(self, bot, game):  # pylint: disable=redefined-outer-name
+        self.bot = bot
+        self.game = game
+
+    @commands.command(name='giddyup', aliases=['giddy'])
+    async def new_game(self, ctx, *args):  # pylint: disable=unused-argument
+        await ctx.send(self.game.initialize(ctx.channel)[0])
+
+    @commands.command(name='pedigree')
+    async def show_pedigree(self, ctx, *args):  # pylint: disable=unused-argument
+        if os.getenv('GIT_COMMIT') is None:
+            await ctx.send('Neigh! No git commit found.')
+        else:
+            await ctx.send(os.getenv('GIT_COMMIT'))
+
+    @commands.command(name='damage', aliases=['whats'])
+    async def damage(self, ctx, *args):  # pylint: disable=unused-argument
+        await ctx.send(str(self.game))
+
+    @commands.command(name='in', aliases=['in!'])
+    @in_state('herding')
+    async def add_player(self, ctx, *args):  # pylint: disable=unused-argument):
+        if self.game.add_player(ctx.author.name):
+            await ctx.message.add_reaction('🐴')
+
+    @in_state('herding')
+    @commands.command(name='ready')
+    async def ready(self, ctx):
+        await ctx.send('\n'.join(map(str, self.game.next_round())))
+
+    @in_state('awaiting_nextround')
+    @commands.command(name='again')
+    async def next_round(self, ctx):
+        await ctx.send('\n'.join(map(str, self.game.next_round())))
+
+    @commands.Cog.listener("on_message")
+    async def add_submission(self, message):
+        check = self.game.state == 'awaiting_submissions'
+        if message.guild is None and check:
+            await message.add_reaction(self.game.submission(message.author.name, message.content)[0])
+
+    @commands.Cog.listener("on_message")
+    async def add_guess(self, message):
+        if message.guild is None and self.game.state == 'awaiting_guesses':
+            reply: List = self.game.guess(message.author.name, message.content)
+
+            if len(reply) == 1:
+                await message.add_reaction(reply[0])
+            else:
+                await message.channel.send('\n'.join(map(str, reply)))
+
+
+class Bot(commands.Bot):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    async def on_ready(self):
+        print('We have logged in as {0.user}'.format(self))
+
+
+bot = Bot(command_prefix='🐴')
 game = Game()
-
-@client.event
-async def on_ready():
-    print('We have logged in as {0.user}'.format(client))
-
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-
-    direct = str(message.channel.type) == 'private' or client.user.mentioned_in(message)
-    command = command_from_message(message.content)
-    icommand = lower(command)
-    player = message.author.name
-    print('command (direct? {}): {}'.format(direct, icommand))
-
-    async def handle_response(response):
-        if response is not None:
-            for msg in response:
-                if len(msg) == 2 and msg[0] == ':':
-                    await message.add_reaction(msg[1])
-                else:
-                    await game.channel.send(msg)
-
-    if direct and icommand == 'pedigree please':
-        await message.channel.send(os.getenv('GIT_COMMIT'))
-    elif direct and icommand == 'whats your damage':
-        await message.channel.send(str(game))
-    elif direct and icommand == 'giddy up':
-        await handle_response(game.initialize(message.channel))
-    elif game.instate('herding') and icommand == 'in':
-        await handle_response(game.add_player(player))
-    elif direct and game.instate('herding') and icommand == 'ready':
-        await handle_response(game.next_round())
-    elif direct and game.instate('awaiting_submissions'):
-        await handle_response(game.submission(player, command))
-    elif direct and game.instate('awaiting_guesses'):
-        await handle_response(game.guess(player, icommand))
-    elif direct and game.instate('awaiting_nextround') and icommand == 'again':
-        await handle_response(game.next_round())
+bot.add_cog(GameCog(bot, game))
 
 if __name__ == "__main__":
-    import os
-    import sys
     if os.getenv('DISCORD_TOKEN'):
         token = os.getenv('DISCORD_TOKEN')
     else:
         token = sys.argv[1]
-    client.run(token)
+    bot.run(token)

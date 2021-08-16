@@ -3,8 +3,8 @@ import unittest
 
 from bot import Game
 
-class TestGame(unittest.TestCase):
 
+class TestGame(unittest.TestCase):
     def test_initial_state(self):
         g = Game()
         self.assertTrue(g.instate('unstarted'))
@@ -22,7 +22,7 @@ class TestGame(unittest.TestCase):
 
         self.assertEqual(g.players, [])
         msgs = g.add_player('fakeandy')
-        self.assertEqual(msgs, [':🐴'])
+        self.assertEqual(msgs, ['🐴'])
         self.assertEqual(g.players, ['fakeandy'])
         # Ensure we don't get a dupe
         g.add_player('fakeandy')
@@ -49,15 +49,15 @@ class TestGame(unittest.TestCase):
         self.assertTrue(g.get_truther(), 'roonbaob')
         msgs = g.submission('fakeandy', 'gokarts')
         self.assertTrue(g.instate('awaiting_submissions'))
-        self.assertEqual(msgs, [':✅'])
+        self.assertEqual(msgs, ['✅'])
 
         msgs = g.submission('unaddedplayer', 'fakeout')
         self.assertTrue(g.instate('awaiting_submissions'))
-        self.assertEqual(msgs, [':🚫'])
+        self.assertEqual(msgs, ['🚫'])
 
         msgs = g.submission('roonbaob', 'chocolate')
         self.assertTrue(g.instate('awaiting_guesses'))
-        self.assertEqual(msgs[0], ':✅')
+        self.assertEqual(msgs[0], '✅')
         self.assertEqual(len(msgs), 2)
 
     def test_guesses(self):
@@ -72,34 +72,33 @@ class TestGame(unittest.TestCase):
         g.submission('fakeandy', 'gokarts')
         g.submission('tater', 'bofa deez nuts')
         msgs = g.submission('roonbaob', 'Chocolate')
-        #print(msgs[1])
+        # print(msgs[1])
 
         msgs = g.guess('nonplayer', '1')
-        self.assertEqual(msgs, [':🚫'])
+        self.assertEqual(msgs, ['🚫'])
         self.assertTrue(g.instate('awaiting_guesses'))
 
         # Ensure a submitter can't guess.
         self.assertEqual(g.get_truther(), 'fakeandy')
         msgs = g.guess('fakeandy', '1')
-        self.assertEqual(msgs, [':🚫'])
+        self.assertEqual(msgs, ['🚫'])
         self.assertTrue(g.instate('awaiting_guesses'))
 
         # Ensure a non-int is handled gracefully.
         msgs = g.guess('roonbaob', '2x')
-        self.assertEqual(msgs[0], ':😱')
+        self.assertEqual(msgs[0], '😱')
 
         msgs = g.guess('tater', '3')
-        self.assertEqual(msgs, [':✅'])
+        self.assertEqual(msgs, ['✅'])
         msgs = g.guess('roonbaob', '1')
-        self.assertEqual(msgs[0], ':✅')
+        self.assertEqual(msgs[0], '✅')
         self.assertEqual(len(msgs), 2)
-        #print(msgs[1])
+        # print(msgs[1])
         self.assertTrue(g.instate('awaiting_nextround'))
 
         self.assertEqual(len(g.guesses), 2)
         g.next_round()
         self.assertEqual(len(g.guesses), 0)
-
 
 
 if __name__ == '__main__':
