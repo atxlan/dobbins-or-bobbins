@@ -30,7 +30,7 @@ class Game:
         player = author
         if player not in self.players:
             self.players.append(player)
-        return [':🐴']
+        return ['🐴']
 
     def get_round(self):
         return self.rounds[-1]
@@ -51,12 +51,12 @@ class Game:
 
     def submission(self, author, text) -> List[str]:
         if author not in self.players:
-            return [':🚫']
+            return ['🚫']
 
         round = self.get_round()
         round[author] = text
         num_submissions = len(round.keys())
-        msgs = [':✅']
+        msgs = ['✅']
         if num_submissions == len(self.players):
             msgs += self.show_submissions()
         return msgs
@@ -76,19 +76,19 @@ class Game:
 
     def guess(self, player, guess):
         if player not in self.players or player == self.get_truther():
-            return [':🚫']
+            return ['🚫']
 
         try:
             guess = int(guess)
         except ValueError:
-            return [':😱']
+            return ['😱']
 
         self.guesses[player] = guess - 1
         msgs = []
         if len(self.guesses) == len(self.players) - 1:
             self.state = 'awaiting_nextround'
             msgs += self.finish_round()
-        return [':✅'] + msgs
+        return ['✅'] + msgs
 
     def finish_round(self):
         truther = self.get_truther()
