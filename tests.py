@@ -15,6 +15,8 @@ class TestGame(unittest.TestCase):
         msgs = g.initialize('#')
         self.assertTrue(g.instate('herding'), g.state)
         self.assertEqual(len(msgs), 1)
+        state_string = 'In state "herding" with players []'
+        self.assertEqual(str(g), state_string)
 
     def test_add_players(self):
         g = Game()
@@ -24,11 +26,13 @@ class TestGame(unittest.TestCase):
         msgs = g.add_player('fakeandy')
         self.assertEqual(msgs, [':🐴'])
         self.assertEqual(g.players, ['fakeandy'])
+        self.assertEqual(str(g), 'In state "herding" with players [\'fakeandy\']')
         # Ensure we don't get a dupe
         g.add_player('fakeandy')
         self.assertEqual(g.players, ['fakeandy'])
         g.add_player('roonbaob')
         self.assertEqual(g.players, ['fakeandy', 'roonbaob'])
+        self.assertEqual(str(g), 'In state "herding" with players [\'fakeandy\', \'roonbaob\']')
 
     def test_ready_up(self):
         g = Game()
@@ -38,6 +42,9 @@ class TestGame(unittest.TestCase):
 
         self.assertTrue(g.instate('awaiting_submissions'))
         self.assertTrue(g.get_truther(), 'fakeandy')
+        state_string = '''In state "awaiting_submissions" with players [\'fakeandy\']
+In Round #1. Submissions from [], guesses from []'''
+        self.assertEqual(str(g), state_string)
 
     def test_submissions(self):
         g = Game()
@@ -59,6 +66,10 @@ class TestGame(unittest.TestCase):
         self.assertTrue(g.instate('awaiting_guesses'))
         self.assertEqual(msgs[0], ':✅')
         self.assertEqual(len(msgs), 2)
+
+        state_string = '''In state "awaiting_guesses" with players [\'roonbaob\', \'fakeandy\']
+In Round #1. Submissions from [\'fakeandy\', \'roonbaob\'], guesses from []'''
+        self.assertEqual(str(g), state_string)
 
     def test_guesses(self):
         random.seed(9007)
@@ -90,6 +101,12 @@ class TestGame(unittest.TestCase):
 
         msgs = g.guess('tater', '3')
         self.assertEqual(msgs, [':✅'])
+
+        state_string = '''In state "awaiting_guesses" with players ['fakeandy', 'roonbaob', 'tater']
+In Round #1. Submissions from ['fakeandy', 'tater', 'roonbaob'], guesses from ['tater']'''
+        self.assertEqual(str(g), state_string)
+
+
         msgs = g.guess('roonbaob', '1')
         self.assertEqual(msgs[0], ':✅')
         self.assertEqual(len(msgs), 2)

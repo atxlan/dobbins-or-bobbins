@@ -122,7 +122,7 @@ class Game:
 
     def __str__(self):
         status = 'In state "{}" with players {}'.format(self.state, self.players)
-        if self.state != 'unstarted':
+        if self.state != 'unstarted' and self.state != 'herding':
             status += '\nIn Round #{}. Submissions from {}, guesses from {}'.format(len(self.rounds), list(self.get_round().keys()), list(self.guesses.keys()))
         return status
 
