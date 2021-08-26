@@ -26,7 +26,6 @@ class GameState(Enum):
 
 
 class Game:
-
     def __init__(self):
         self.state = GameState.UNSTARTED
         self.players = []
