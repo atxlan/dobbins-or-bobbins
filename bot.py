@@ -1,5 +1,6 @@
 import discord
 from collections import defaultdict
+from enum import Enum
 import random
 import os
 
@@ -16,14 +17,22 @@ def lower(msg):
     return msg.lower().strip("#?!., \n\r").replace("'", "")
 
 
+class GameState(Enum):
+    UNSTARTED = 0
+    HERDING = 5
+    AWAITING_SUBMISSIONS = 10
+    AWAITING_GUESSES = 15
+    AWAITING_NEXTROUND = 20
+
+
 class Game:
     def __init__(self):
-        self.state = "unstarted"
+        self.state = GameState.UNSTARTED
         self.players = []
 
     def initialize(self, channel):
         self.channel = channel
-        self.state = "herding"
+        self.state = GameState.HERDING
         self.rounds = []
         self.players = []
         self.order = []
@@ -54,7 +63,7 @@ class Game:
             msgs.append("Alright, starting a game with players: {}".format(" ".join(self.players)))
         self.rounds.append({})
         msgs.append("You're up, {}. Slide a truth bomb into my DMs! Everyone else, a fib.".format(self.get_truther()))
-        self.state = "awaiting_submissions"
+        self.state = GameState.AWAITING_SUBMISSIONS
         return msgs
 
     def submission(self, author, text):
@@ -71,7 +80,7 @@ class Game:
 
     def show_submissions(self):
         msgs = []
-        self.state = "awaiting_guesses"
+        self.state = GameState.AWAITING_GUESSES
         msg = "Okay, let's get guessing! Is the real answer:\n\n"
         self.order = list(range(len(self.players)))
         random.shuffle(self.order)
@@ -94,7 +103,7 @@ class Game:
         self.guesses[player] = guess - 1
         msgs = []
         if len(self.guesses) == len(self.players) - 1:
-            self.state = "awaiting_nextround"
+            self.state = GameState.AWAITING_NEXTROUND
             msgs += self.finish_round()
         return [":✅"] + msgs
 
@@ -127,7 +136,7 @@ class Game:
 
     def __str__(self):
         status = 'In state "{}" with players {}'.format(self.state, self.players)
-        if self.state != "unstarted" and self.state != "herding":
+        if self.state != GameState.UNSTARTED and self.state != GameState.HERDING:
             status += "\nIn Round #{}. Submissions from {}, guesses from {}".format(
                 len(self.rounds), list(self.get_round().keys()), list(self.guesses.keys())
             )
@@ -168,15 +177,15 @@ async def on_message(message):
         await message.channel.send(str(game))
     elif direct and icommand == "giddy up":
         await handle_response(game.initialize(message.channel))
-    elif game.instate("herding") and icommand == "in":
+    elif game.instate(GameState.HERDING) and icommand == "in":
         await handle_response(game.add_player(player))
-    elif direct and game.instate("herding") and icommand == "ready":
+    elif direct and game.instate(GameState.HERDING) and icommand == "ready":
         await handle_response(game.next_round())
-    elif direct and game.instate("awaiting_submissions"):
+    elif direct and game.instate(GameState.AWAITING_SUBMISSIONS):
         await handle_response(game.submission(player, command))
-    elif direct and game.instate("awaiting_guesses"):
+    elif direct and game.instate(GameState.AWAITING_GUESSES):
         await handle_response(game.guess(player, icommand))
-    elif direct and game.instate("awaiting_nextround") and icommand == "again":
+    elif direct and game.instate(GameState.AWAITING_NEXTROUND) and icommand == "again":
         await handle_response(game.next_round())
 
 
